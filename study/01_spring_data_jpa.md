@@ -220,7 +220,7 @@ public class Team {
  
  }
 ``` 
-**쿼리 메소드 필터 조건**
+**1. 쿼리 메소드 필터 조건**
 
 스프링 데이터 JPA 공식 문서 참고: (https://docs.spring.io/spring-data/jpa/docs/current/reference/html/#jpa.query-methods.query-creation)
 
@@ -239,3 +239,55 @@ public class Team {
 > 참고: 이 기능은 엔티티의 필드명이 변경되면 인터페이스에 정의한 메서드 이름도 꼭 함께 변경해야 한다. 
 > 그렇지 않으면 애플리케이션을 시작하는 시점에 오류가 발생한다.
 > 이렇게 애플리케이션 로딩 시점에 오류를 인지할 수 있는 것이 스프링 데이터 JPA의 매우 큰 장점이다.
+
+### JPA NamedQuery
+
+JPA의 NamedQuery를 호출할 수 있음
+
+- @NamedQuery 어노테이션으로 Named 쿼리 정의
+``` java
+  @Entity
+  @NamedQuery(
+      name="Member.findByUsername",
+      query="select m from Member m where m.username = :username")
+  public class Member {
+      ... 
+}
+ 
+```
+
+- JPA를 직접 사용해서 Named 쿼리 호출
+``` java
+  public List<Member> findByUsername(String username) {
+        return em.createNamedQuery("Member.findByUsername", Member.class)
+                .setParameter("username", "회원1")
+                .getResultList();
+  }
+``` 
+
+- 스프링 데이터 JPA로 NamedQuery 사용
+``` java
+  @Query(name = "Member.findByUsername")
+  List<Member> findByUsername(@Param("username") String username);
+``` 
+
+장점: 애플리케이션 로딩 시점에 문법 오류를 체크함. JPQL은 문법 오류 안나는데 사용자가 눌렀을때 에러남.
+
+> 참고: 스프링 데이터 JPA를 사용하면 실무에서 Named Query를 직접 등록해서 사용하는 일은 드물다. 
+> 대신 @Query 를 사용해서 리파지토리 메소드에 쿼리를 직접 정의한다.
+
+- @Query, 리포지토리 메소드에 쿼리 정의하기
+
+***이름이 없는 NamedQuery 라고 생각하면 된다.***
+
+``` java
+ @Query("select m from Member m where m.username= :username and m.age = :age")
+ List<Member> findUser(@Param("username") String username, @Param("age") int age);
+``` 
+
+- @org.springframework.data.jpa.repository.Query 어노테이션을 사용
+- 실행할 메서드에 정적 쿼리를 직접 작성하므로 이름 없는 Named 쿼리라 할 수 있음
+- JPA Named 쿼리처럼 애플리케이션 실행 시점에 문법 오류를 발견할 수 있음(매우 큰 장점!)
+
+> 참고: 실무에서는 메소드 이름으로 쿼리 생성 기능은 파라미터가 증가하면 메서드 이름이 매우 지저분해진다. 
+> 따라서 @Query 기능을 자주 사용하게 된다.
