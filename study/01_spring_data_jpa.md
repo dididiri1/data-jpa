@@ -372,3 +372,48 @@ JPA의 NamedQuery를 호출할 수 있음
 > 참고: 단건으로 지정한 메서드를 호출하면 스프링 데이터 JPA는 내부에서 JPQL의 Query.getSingleResult() 메서드를 호출한다.
 > 이 메서드를 호출했을 때 조회 결과가 없으면 javax.persistence.NoResultException 예외가 발생하는데 개발자 입장에서 다루기가 상당히 불편하 다.
 > 스프링 데이터 JPA는 단건을 조회할 때 이 예외가 발생하면 예외를 무시하고 대신에 null 을 반환한다.
+
+### 순수 JPA 페이징과 정렬
+
+- JPA 페이징 리포지토리 코드
+
+- MemberJpaRepository - 추가
+``` java
+  public List<Member> findByPage(int age, int offset, int limit) {
+      return em.createQuery(
+                "select m from Member m where m.age = :age order by m.username desc", Member.class)
+                .setParameter("age", age)
+                .setFirstResult(offset)
+                .setMaxResults(limit)
+                .getResultList();
+  }
+
+  public long totalCont(int age) {
+      return em.createQuery(
+                "select count(m) from Member m where m.age = :age", Long.class)
+                .setParameter("age", age)
+                .getSingleResult();
+  }
+``` 
+
+### 스프링 데이터 JPA 페이징과 정렬
+
+**페이징과 정렬 파라미터**
+- org.springframework.data.domain.Sort : 정렬 기능
+- org.springframework.data.domain.Pageable : 페이징 기능 (내부에 Sort 포함)
+
+**특별한 반환 타입**
+- org.springframework.data.domain.Page : 추가 count 쿼리 결과를 포함하는 페이징
+- org.springframework.data.domain.Slice : 추가 count 쿼리 없이 다음 페이지만 확인 가능(내부적 으로 limit + 1조회)
+- List (자바 컬렉션): 추가 count 쿼리 없이 결과만 반환
+
+``` java
+ Page<Member> findByAge(int age, Pageable pageable); // count 쿼리 사용
+ 
+ Slice<Member> findSliceByAge(int age, Pageable pageable); // count 쿼리 없음
+ 
+ List<Member> findListByAge(int age, Pageable pageable); // count 쿼리 없음
+ 
+ @Query(value = "select m from Member m left join m.team t", countQuery = "select count(m.username) from Member m")
+ Page<Member> findQueryByAge(int age, Pageable pageable);  // count 쿼리 분리 조인 없이 맴버만 카운팅해서 성능적으로 좋음
+``` 
