@@ -291,3 +291,84 @@ JPA의 NamedQuery를 호출할 수 있음
 
 > 참고: 실무에서는 메소드 이름으로 쿼리 생성 기능은 파라미터가 증가하면 메서드 이름이 매우 지저분해진다. 
 > 따라서 @Query 기능을 자주 사용하게 된다.
+
+
+### @Query, 값, DTO 조회하기
+
+- 단순히 값 하나를 조회
+``` java
+  @Query("select m.username from Member m")
+  List<String> findByUsernameList();
+``` 
+
+- DTO로 직접 조회
+``` java
+  @Query("select new study.datajpa.dto.MemberDto(m.id, m.username, t.name) from Member m join m.team t")
+  List<MemberDto> findMemberDto();
+``` 
+
+### 파라미터 바인딩
+
+- 위치 기반 
+- 이름 기반
+``` java
+ select m from Member m where m.username = ?0 //위치 기반 
+ 
+ select m from Member m where m.username = :name //이름 기반
+``` 
+
+> 참고: 코드 가독성과 유지보수를 위해 이름 기반 파라미터 바인딩을 사용하자
+
+- 컬렉션 파라미터 바인딩 (Collection 타입으로 in절 지원)
+``` java
+ @Query("select m from Member m where m.username in :names")
+ List<Member> findByNames(@Param("names") Collection<String> names);
+``` 
+
+## 반환 타입
+
+- 스프링 데이터 JPA는 유연한 반환 타입 지원
+``` java
+ List<Member> findListByUsername(String username); // 컬랙션
+
+ Member findMemberByUsername(String username); // 단건
+
+ Optional<Member> findOptionalByUsername(String username); // 단건
+``` 
+
+``` java
+    @Test
+    public void returnType() throws Exception {
+        Member m1 = new Member("AAA", 10);
+        Member m2 = new Member("BBB", 20);
+
+        memberRepository.save(m1);
+        memberRepository.save(m2);
+
+        List<Member> result = memberRepository.findListByUsername("AAAASD");
+        System.out.println("result = " + result); // []
+
+        Member findMember = memberRepository.findMemberByUsername("Asdsad");
+        System.out.println("findMember = " + findMember); // null
+
+        // 단건일 경우 값이 없을때 순수 JPA에서는 javax.persistence.NoResultException 나오는데
+        // Spring Data JPA 경우에는 Null을 반환함.
+
+        Optional<Member> OptionalMember = memberRepository.findOptionalByUsername("AABBA");
+        System.out.println("OptionalMember = " + OptionalMember);
+
+        // Java8 이상부터는 값이 있을 수도 있고 없는 경우는 Optional 쓰면 됨.
+    }
+``` 
+스프링 데이터 JPA 공식 문서: https://docs.spring.io/spring-data/jpa/docs/current/reference/html/#repository-query-return-types
+
+**조회 결과가 많거나 없으면?**
+- 컬렉션
+  - 결과 없음: 빈 컬렉션 반환
+- 단건 조회
+  - 결과 없음: null 반환
+  - 결과가 2건 이상: javax.persistence.NonUniqueResultException 예외 발생 
+
+> 참고: 단건으로 지정한 메서드를 호출하면 스프링 데이터 JPA는 내부에서 JPQL의 Query.getSingleResult() 메서드를 호출한다.
+> 이 메서드를 호출했을 때 조회 결과가 없으면 javax.persistence.NoResultException 예외가 발생하는데 개발자 입장에서 다루기가 상당히 불편하 다.
+> 스프링 데이터 JPA는 단건을 조회할 때 이 예외가 발생하면 예외를 무시하고 대신에 null 을 반환한다.

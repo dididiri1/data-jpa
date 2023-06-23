@@ -5,8 +5,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
+import study.datajpa.dto.MemberDto;
 import study.datajpa.entity.Member;
+import study.datajpa.entity.Team;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,6 +22,8 @@ import static org.junit.jupiter.api.Assertions.*;
 class MemberRepositoryTest {
 
     @Autowired MemberRepository memberRepository;
+
+    @Autowired TeamRepository teamRepository;
 
     @Test
     public void testMember() throws Exception {
@@ -98,5 +103,79 @@ class MemberRepositoryTest {
         assertThat(result.get(0)).isEqualTo(m1);
         assertThat(result.get(0).getUsername()).isEqualTo("AAA");
 
+    }
+    
+    @Test
+    public void findUsernameList() throws Exception {
+        Member m1 = new Member("AAA", 10);
+        Member m2 = new Member("BBB", 20);
+
+        memberRepository.save(m1);
+        memberRepository.save(m2);
+
+        List<String> usernameList = memberRepository.findByUsernameList();
+
+        for (String s : usernameList) {
+            System.out.println("s = " + s);
+        }
+
+    }
+
+    @Test
+    public void findMemberDto() throws Exception {
+        Team team = new Team("TeamA");
+        teamRepository.save(team);
+
+        Member m1 = new Member("AAA", 10);
+        m1.setTeam(team);
+        memberRepository.save(m1);
+
+        List<MemberDto> memberDto = memberRepository.findMemberDto();
+
+        for (MemberDto dto : memberDto) {
+            System.out.println("dto = " + dto);
+        }
+
+
+    }
+
+    @Test
+    public void findByNames() throws Exception {
+        Member m1 = new Member("AAA", 10);
+        Member m2 = new Member("BBB", 20);
+
+        memberRepository.save(m1);
+        memberRepository.save(m2);
+
+        List<Member> result = memberRepository.findByNames(Arrays.asList("AAA", "BBB"));
+
+        for (Member member : result) {
+            System.out.println("member = " + member);
+        }
+
+
+    }
+
+    @Test
+    public void returnType() throws Exception {
+        Member m1 = new Member("AAA", 10);
+        Member m2 = new Member("BBB", 20);
+
+        memberRepository.save(m1);
+        memberRepository.save(m2);
+
+        List<Member> result = memberRepository.findListByUsername("AAAASD");
+        System.out.println("result = " + result); // []
+
+        Member findMember = memberRepository.findMemberByUsername("Asdsad");
+        System.out.println("findMember = " + findMember); // null
+
+        // 단건일경우 값이 없을때 순수 JPA Exception이 나오는데
+        // Spring Data JPA 경우에는 Null을 반환함.
+
+        Optional<Member> OptionalMember = memberRepository.findOptionalByUsername("AABBA");
+        System.out.println("OptionalMember = " + OptionalMember);
+
+        // Java8 이상부터는 값이 있을 수도 있고 없는 경우는 Optional 쓰면 됨.
     }
 }

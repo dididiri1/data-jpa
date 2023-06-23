@@ -5,7 +5,6 @@ import study.datajpa.entity.Member;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.swing.text.html.Option;
 import java.util.List;
 import java.util.Optional;
 
@@ -58,5 +57,6 @@ public class MemberJpaRepository {
                 .setParameter("username", "회원1")
                 .getResultList();
     }
+
 
 }
