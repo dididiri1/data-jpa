@@ -35,8 +35,7 @@
 ![](https://github.com/dididiri1/data-jpa/blob/main/study/images/01_03.png?raw=true)
 
 
-- Member 엔티티
-
+#### Member 엔티티
 ``` java
 @Entity
 @Getter @Setter
@@ -149,7 +148,8 @@ public class Team {
   - MemberRepository 인터페이스가 동작한 이유
   - 실제 출력해보기(Proxy)
   - memberRepository.getClass() class com.sun.proxy.$ProxyXXX
-- @Repository 애노테이션 생략 가능
+  
+#### @Repository 애노테이션 생략 가능
 ```java 
   // @Repository
   public interface TeamRepository extends JpaRepository<Team, Long> {
@@ -203,7 +203,7 @@ public class Team {
 
 이름과 나이를 기준으로 회원을 조회하려면?
 
-- 순수 JPA 리포지토리
+#### 순수 JPA 리포지토리
 ``` java
   public List<Member> findByUsernameAndAgeGreaterThan(String username, int age) {
       return em.createQuery("select m from Member m where m.username = :username and m.age > :age")
@@ -214,7 +214,7 @@ public class Team {
 
 ``` 
 
-- 스프링 데이터 JPA
+#### 스프링 데이터 JPA
 ``` java
  public interface MemberRepository extends JpaRepository<Member, Long> {
     
@@ -246,7 +246,7 @@ public class Team {
 
 JPA의 NamedQuery를 호출할 수 있음
 
-- @NamedQuery 어노테이션으로 Named 쿼리 정의
+#### @NamedQuery 어노테이션으로 Named 쿼리 정의
 ``` java
   @Entity
   @NamedQuery(
@@ -258,7 +258,7 @@ JPA의 NamedQuery를 호출할 수 있음
  
 ```
 
-- JPA를 직접 사용해서 Named 쿼리 호출
+#### JPA를 직접 사용해서 Named 쿼리 호출
 ``` java
   public List<Member> findByUsername(String username) {
         return em.createNamedQuery("Member.findByUsername", Member.class)
@@ -267,7 +267,7 @@ JPA의 NamedQuery를 호출할 수 있음
   }
 ``` 
 
-- 스프링 데이터 JPA로 NamedQuery 사용
+#### 스프링 데이터 JPA로 NamedQuery 사용
 ``` java
   @Query(name = "Member.findByUsername")
   List<Member> findByUsername(@Param("username") String username);
@@ -297,13 +297,13 @@ JPA의 NamedQuery를 호출할 수 있음
 
 ### @Query, 값, DTO 조회하기
 
-- 단순히 값 하나를 조회
+#### 단순히 값 하나를 조회
 ``` java
   @Query("select m.username from Member m")
   List<String> findByUsernameList();
 ``` 
 
-- DTO로 직접 조회
+#### DTO로 직접 조회
 ``` java
   @Query("select new study.datajpa.dto.MemberDto(m.id, m.username, t.name) from Member m join m.team t")
   List<MemberDto> findMemberDto();
@@ -321,15 +321,15 @@ JPA의 NamedQuery를 호출할 수 있음
 
 > 참고: 코드 가독성과 유지보수를 위해 이름 기반 파라미터 바인딩을 사용하자
 
-- 컬렉션 파라미터 바인딩 (Collection 타입으로 in절 지원)
+#### 컬렉션 파라미터 바인딩 (Collection 타입으로 in절 지원)
 ``` java
  @Query("select m from Member m where m.username in :names")
  List<Member> findByNames(@Param("names") Collection<String> names);
 ``` 
 
-## 반환 타입
+### 반환 타입
 
-- 스프링 데이터 JPA는 유연한 반환 타입 지원
+#### 스프링 데이터 JPA는 유연한 반환 타입 지원
 ``` java
  List<Member> findListByUsername(String username); // 컬랙션
 
@@ -379,7 +379,7 @@ JPA의 NamedQuery를 호출할 수 있음
 
 - JPA 페이징 리포지토리 코드
 
-- MemberJpaRepository - 추가
+#### MemberJpaRepository - 추가
 ``` java
   public List<Member> findByPage(int age, int offset, int limit) {
       return em.createQuery(
@@ -428,7 +428,7 @@ JPA의 NamedQuery를 호출할 수 있음
 
 > 주의: Page는 1부터 시작이 아니라 0부터 시작이다.
 
-- Page 인터페이스
+#### Page 인터페이스
 ```java
 public interface Page<T> extends Slice<T> {
     int getTotalPages(); //전체 페이지 수
@@ -437,8 +437,7 @@ public interface Page<T> extends Slice<T> {
 }
 ``` 
 
-- Slice 인터페이스
-
+#### Slice 인터페이스
 ```java
 public interface Slice<T> extends Streamable<T> {
     int getNumber();             //현재 페이지
@@ -469,7 +468,7 @@ public interface Slice<T> extends Streamable<T> {
 
 ### 벌크성 수정 쿼리
 
-- JPA를 사용한 벌크성 수정 쿼리
+#### JPA를 사용한 벌크성 수정 쿼리
 ``` java
  public int bulkAgePlus(int age) {
      int resultCount = em.createQuery(
@@ -481,7 +480,7 @@ public interface Slice<T> extends Streamable<T> {
  }
 ``` 
 
-- 스프링 데이터 JPA를 사용한 벌크성 수정 쿼리  
+#### 스프링 데이터 JPA를 사용한 벌크성 수정 쿼리  
 ***벌크성 쿼리란 DB에서 여러개의 레코드를 한번에 추가/수정/삭제하는 쿼리를 말한다.***
 
 ``` java
@@ -494,13 +493,15 @@ public interface Slice<T> extends Streamable<T> {
   - 사용하지 않으면 예외 발생
 - 벌크성 쿼리를 실행하고 나서 영속성 컨텍스트 초기화: @Modifying(clearAutomatically = true)
 - 벌크성 수정 후 데이터 데이터 조회시 초기화 해주는게 좋음.
+
+
 ``` java
  @Modifying(clearAutomatically = true)
  @Query(value = "update Member m set m.age = m.age + 1 where m.age >= :age")
  int bulkAgePlus(@Param("age") int age);
 ```
 
-- em.clear() 를 Spring data JPA에서 @Modifying(clearAutomatically = true) 이런식으로 사용 가능 (기본 값은 false)
+#### em.clear() 를 Spring data JPA에서 @Modifying(clearAutomatically = true) 이런식으로 사용 가능 (기본 값은 false)
 ``` java
  @PersistenceContext
  EntityManager em;
@@ -522,7 +523,7 @@ private Team team;
 ``` 
 
 
-- JPQL 페치 조인 - N + 1 문제 해결함.
+#### JPQL 페치 조인 - N + 1 문제 해결함.
 ``` java
 @Query(value = "select m from Member m left join fetch m.team")
 List<Member> findMemberFetchJoin();
@@ -531,8 +532,7 @@ List<Member> findMemberFetchJoin();
 스프링 데이터 JPA는 JPA가 제공하는 엔티티 그래프 기능을 편리하게 사용하게 도와준다.  
 이 기능을 사용 하면 JPQL 없이 페치 조인을 사용할 수 있다. (JPQL + 엔티티 그래프도 가능)
 
-- EntityGraph
-
+#### EntityGraph
 ``` java
 //공통 메서드 오버라이드
 @Override
@@ -558,7 +558,7 @@ List<Member> findByUsername(String username);
 ### JPA Hint  
 ***JPA 쿼리 힌트(SQL 힌트가 아니라 JPA 구현체에게 제공하는 힌트)***
 
-- 쿼리 힌트 사용
+#### 쿼리 힌트 사용
 ``` java
 @QueryHints(value = @QueryHint(name = "org.hibernate.readOnly", value ="true"))
 Member findReadOnlyByUsername(String username);
@@ -588,4 +588,56 @@ public void queryHint() throws Exception {
 List<Member> findLockByUsername(String username);
 ```
 
+### 사용자 정의 리포지토리 구현
 
+- 스프링 데이터 JPA 리포지토리는 인터페이스만 정의하고 구현체는 스프링이 자동 생성
+- 스프링 데이터 JPA가 제공하는 인터페이스를 직접 구현하면 구현해야 하는 기능이 너무 많음
+- 다양한 이유로 인터페이스의 메서드를 직접 구현하고 싶다면?
+  - JPA 직접 사용( EntityManager ) 
+  - 스프링 JDBC Template 사용 
+  - MyBatis 사용
+  - 데이터베이스 커넥션 직접 사용 등등... 
+  - Querydsl 사용
+
+#### 사용자 정의 인터페이스
+``` java
+public interface MemberRepositoryCustom {
+    List<Member> findMemberCustom();
+}
+``` 
+
+#### 사용자 정의 인터페이스 구현 클래스
+``` java
+@RequiredArgsConstructor
+public class MemberRepositoryImpl implements MemberRepositoryCustom {
+    
+    private final EntityManager em;
+    
+    @Override
+    public List<Member> findMemberCustom() {
+         return em.createQuery("select m from Member m").getResultList();
+         
+   } 
+}
+
+``` 
+
+#### 사용자 정의 인터페이스 구현 클래스
+``` java
+public interface MemberRepository extends JpaRepository<Member, Long>, MemberRepositoryCustom {
+
+}
+``` 
+
+#### 사용자 정의 메서드 호출 코드
+``` java
+List<Member> result = memberRepository.findMemberCustom();
+``` 
+
+- 사용자 정의 구현 클래스
+  - 규칙: 리포지토리 인터페이스 이름 + Impl
+  - 스프링 데이터 JPA가 인식해서 스프링 빈으로 등록
+
+> 참고: 실무에서는 주로 QueryDSL이나 SpringJdbcTemplate을 
+> 함께 사용할 때 사용자 정의 리포지토 리 기능 자주 사용한다.
+> 항상 사용자 정의 리포지토리가 필요한 것은 아니다.
