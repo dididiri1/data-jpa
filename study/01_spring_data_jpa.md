@@ -464,3 +464,43 @@ public interface Slice<T> extends Streamable<T> {
  
  Page<MemberDto> toMap = page.map(member -> new MemberDto(member.getId(), member.getUsername(), null));
 ```
+
+### 벌크성 수정 쿼리
+
+- JPA를 사용한 벌크성 수정 쿼리
+``` java
+ public int bulkAgePlus(int age) {
+     int resultCount = em.createQuery(
+                "update Member m set m.age = m.age + 1" +
+                        "where m.age >= :age")
+                .setParameter("age", age)
+                .executeUpdate();
+     return resultCount;
+ }
+``` 
+
+- 스프링 데이터 JPA를 사용한 벌크성 수정 쿼리
+***벌크성 쿼리란 DB에서 여러개의 레코드를 한번에 추가/수정/삭제하는 쿼리를 말한다.***
+
+``` java
+ @Modifying
+ @Query("update Member m set m.age = m.age + 1 where m.age >= :age")
+ int bulkAgePlus(@Param("age") int age);
+```
+
+- 벌크성 수정, 삭제 쿼리는 @Modifying 어노테이션을 사용
+- 벌크성 쿼리를 실행하고 나서 영속성 컨텍스트 초기화: @Modifying(clearAutomatically = true)
+- 벌크성 수정 후 데이터 데이터 조회시 초기화 해주는게 좋음.
+``` java
+ @Modifying(clearAutomatically = true)
+ @Query(value = "update Member m set m.age = m.age + 1 where m.age >= :age")
+ int bulkAgePlus(@Param("age") int age);
+```
+
+- em.clear() 를 Spring data JPA에서 @Modifying(clearAutomatically = true) 이런식으로 사용 가능
+``` java
+ @PersistenceContext
+ EntityManager em;
+ 
+ em.clear();
+```

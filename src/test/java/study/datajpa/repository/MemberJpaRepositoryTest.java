@@ -20,21 +20,6 @@ class MemberJpaRepositoryTest {
     @Autowired MemberJpaRepository memberJpaRepository;
 
     @Test
-    public void testMember() throws Exception {
-        //given
-        Member member = new Member("memberA");
-        Member saveMember = memberJpaRepository.save(member);
-        //when
-        Member findMember = memberJpaRepository.find(saveMember.getId());
-
-        //then
-        assertThat(findMember.getId()).isEqualTo(member.getId());
-        assertThat(findMember.getUsername()).isEqualTo(member.getUsername());
-        assertThat(findMember).isEqualTo(member);
-
-    }
-
-    @Test
     public void findByUsernameAndAgeGreaterThen() throws Exception {
         Member m1 = new Member("AAA", 10);
         Member m2 = new Member("AAA", 20);
@@ -70,5 +55,37 @@ class MemberJpaRepositoryTest {
         //then
         assertThat(members.size()).isEqualTo(3);
         assertThat(totalCont).isEqualTo(5);
+    }
+
+    @Test
+    public void testMember() throws Exception {
+        //given
+        Member member = new Member("memberA");
+        Member saveMember = memberJpaRepository.save(member);
+        //when
+        Member findMember = memberJpaRepository.find(saveMember.getId());
+
+        //then
+        assertThat(findMember.getId()).isEqualTo(member.getId());
+        assertThat(findMember.getUsername()).isEqualTo(member.getUsername());
+        assertThat(findMember).isEqualTo(member);
+
+    }
+
+    @Test
+    public void bulkUpdate() throws Exception {
+        //given
+        memberJpaRepository.save(new Member("member1", 10));
+        memberJpaRepository.save(new Member("member2", 19));
+        memberJpaRepository.save(new Member("member3", 20));
+        memberJpaRepository.save(new Member("member4", 21));
+        memberJpaRepository.save(new Member("member5", 40));
+
+        //when
+        int resultCount = memberJpaRepository.bulkAgePlus(20);
+
+        //then
+        assertThat(resultCount).isEqualTo(3);
+
     }
 }
