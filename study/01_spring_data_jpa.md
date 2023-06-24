@@ -1,4 +1,9 @@
 
+## tdd
+>//given (이런 데이터가/상황이 주어줬을때)
+>//when (이렇케 실행하면)
+>//then (이런 결과가 나온다.
+
 
 ### 라이브러리 살펴보기
 
@@ -640,4 +645,120 @@ List<Member> result = memberRepository.findMemberCustom();
 
 > 참고: 실무에서는 주로 QueryDSL이나 SpringJdbcTemplate을 
 > 함께 사용할 때 사용자 정의 리포지토 리 기능 자주 사용한다.
-> 항상 사용자 정의 리포지토리가 필요한 것은 아니다.
+
+> 참고: 항상 사용자 정의 리포지토리가 필요한 것은 아니다. 그냥 임의의 리포지토리를 만들어도 된다. 예를
+> 들어 MemberQueryRepository를 인터페이스가 아닌 클래스로 만들고 스프링 빈으로 등록해서 그냥 직
+> 접 사용해도 된다. 물론 이 경우 스프링 데이터 JPA와는 아무런 관계 없이 별도로 동작한다.
+
+### Auditing
+
+***컬럼에 등록일, 수정일, 등록자, 수정자 남기고 싶을때. 관리해주는 기능***
+
+#### 순수 JPA 사용 (등록일, 수정일)
+``` java
+@MappedSuperclass
+@Getter @Setter
+public class JpaBaseEntity {
+
+    @Column(updatable = false)
+    private LocalDateTime createdDate;
+
+    private LocalDateTime updatedDate;
+
+    @PrePersist // save 저장하기 전에 이벤트 발생
+    public void prePersist() {
+        LocalDateTime now = LocalDateTime.now();
+        createdDate = now;
+        updatedDate = now;
+    }
+
+    @PreUpdate // flush 업데이트 전에 이벤트 발생
+    public void preUpdate() {
+        updatedDate = LocalDateTime.now();
+    }
+
+}
+``` 
+
+#### JPA 주요 이벤트 어노테이션
+- @PrePersist, @PostPersist 
+- @PreUpdate, @PostUpdate
+
+### 스프링 데이터 JPA 사용
+
+#### 설정
+- @EnableJpaAuditing -> 스프링 부트 설정 클래스에 설정
+- @EntityListeners(AuditingEntityListener.class) -> 엔티티에 설정
+
+#### 사용 어노테이션
+- @CreatedDate
+- @LastModifiedDate
+- @CreatedBy
+- @LastModifiedBy
+
+#### 스프링 데이터 Auditing 적용
+``` java
+@EntityListeners(AuditingEntityListener.class)
+@MappedSuperclass
+@Getter
+public class BaseEntity {
+
+    @CreatedDate
+    @Column(updatable = false)
+    private LocalDateTime createdDate;
+
+    @LastModifiedDate
+    private LocalDateTime lastModifiedDate;
+
+    @CreatedBy
+    @Column(updatable = false)
+    private String createBy;
+
+    @LastModifiedBy
+    private String lastModifiedBy;
+}
+``` 
+
+#### 등록자, 수정자를 처리해주는 AuditorAware 스프링 빈 등록\
+``` java
+@EnableJpaAuditing // @EnableJpaAuditing 도 함께 등록해야 합니다.
+@SpringBootApplication
+public class DataJpaApplication {
+         
+    public static void main(String[] args) {
+              SpringApplication.run(DataJpaApplication.class, args);
+    }
+    
+    @Bean
+    public AuditorAware<String> auditorProvider() {
+        return () -> Optional.of(UUID.randomUUID().toString());
+    }
+}
+``` 
+
+> 참고: 실무에서는 세션 정보나, 스프링 시큐리티 로그인 정보에서 ID를 받음
+
+> 참고: 실무에서 대부분의 엔티티는 등록시간, 수정시간이 필요하지만, 등록자, 수정자는 없을 수도 있다. 
+> 그래서 다음과 같이 Base 타입을 분리하고, 원하는 타입을 선택해서 상속한다.
+
+``` java
+public class BaseTimeEntity {
+    @CreatedDate
+    @Column(updatable = false)
+    private LocalDateTime createdDate;
+   
+    @LastModifiedDate
+    private LocalDateTime lastModifiedDate;
+}
+    
+public class BaseEntity extends BaseTimeEntity {
+    @CreatedBy
+    @Column(updatable = false)
+    private String createdBy;
+
+    @LastModifiedBy
+    private String lastModifiedBy;
+}
+``` 
+ 
+#### 시간만 필요하면 BaseTimeEntity 상속받고, 4가지 다 필요하면 BaseEntity 상속 받으면 됨.

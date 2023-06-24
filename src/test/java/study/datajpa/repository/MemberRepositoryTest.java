@@ -1,5 +1,6 @@
 package study.datajpa.repository;
 
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -32,6 +33,8 @@ class MemberRepositoryTest {
 
     @PersistenceContext
     EntityManager em;
+
+    @Autowired MemberQueryRepository memberQueryRepository;
 
     @Test
     public void testMember() throws Exception {
@@ -272,7 +275,7 @@ class MemberRepositoryTest {
         System.out.println("member5 = " + member5);
 
         //then
-        assertThat(resultCount).isEqualTo(3);
+        Assertions.assertThat(resultCount).isEqualTo(3);
 
     }
 
