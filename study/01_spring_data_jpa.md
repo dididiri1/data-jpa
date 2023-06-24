@@ -488,7 +488,8 @@ public interface Slice<T> extends Streamable<T> {
  int bulkAgePlus(@Param("age") int age);
 ```
 
-- 벌크성 수정, 삭제 쿼리는 @Modifying 어노테이션을 사용
+- 벌크성 수정, 삭제 쿼리는 **@Modifying** 어노테이션을 사용
+  - 사용하지 않으면 예외 발생
 - 벌크성 쿼리를 실행하고 나서 영속성 컨텍스트 초기화: @Modifying(clearAutomatically = true)
 - 벌크성 수정 후 데이터 데이터 조회시 초기화 해주는게 좋음.
 ``` java
@@ -497,10 +498,53 @@ public interface Slice<T> extends Streamable<T> {
  int bulkAgePlus(@Param("age") int age);
 ```
 
-- em.clear() 를 Spring data JPA에서 @Modifying(clearAutomatically = true) 이런식으로 사용 가능
+- em.clear() 를 Spring data JPA에서 @Modifying(clearAutomatically = true) 이런식으로 사용 가능 (기본 값은 false)
 ``` java
  @PersistenceContext
  EntityManager em;
  
  em.clear();
 ```
+
+- @EntityGraph
+  - 연관된 엔티티들을 SQL 한번으로 조회하는 방법이다.
+  - Spring Data JPA에서 fetch join 하는 것을 말함.
+
+***member -> team이 지연로딩 관계로 엮여있다면, team 조회 시 할 때 마다 쿼리가 실행된다. N + 1 문제 발생***
+``` java
+ @ManyToOne(fetch = LAZY)
+ @JoinColumn(name = "team_id")
+ private Team team;
+``` 
+
+
+- JPQL 페치 조인 - N + 1 문제 해결함.
+``` java
+ @Query(value = "select m from Member m left join fetch m.team")
+ List<Member> findMemberFetchJoin();
+``` 
+
+스프링 데이터 JPA는 JPA가 제공하는 엔티티 그래프 기능을 편리하게 사용하게 도와준다. 
+이 기능을 사용 하면 JPQL 없이 페치 조인을 사용할 수 있다. (JPQL + 엔티티 그래프도 가능)
+
+- EntityGraph
+
+``` java
+//공통 메서드 오버라이드
+@Override
+@EntityGraph(attributePaths = {"team"}) 
+List<Member> findAll();
+
+//JPQL + 엔티티 그래프 
+@EntityGraph(attributePaths = {"team"}) 
+@Query("select m from Member m") 
+List<Member> findMemberEntityGraph();
+
+//메서드 이름으로 쿼리에서 특히 편리하다. 
+@EntityGraph(attributePaths = {"team"}) 
+List<Member> findByUsername(String username);
+```
+
+### EntityGraph 정리
+- 사실상 페치 조인(FETCH JOIN)의 간편 버전
+- LEFT OUTER JOIN 사용
