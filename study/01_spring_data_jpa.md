@@ -181,7 +181,8 @@ public class Team {
 
 - 메소드 이름으로 쿼리 생성
 - NamedQuery
-- @Query - 리파지토리 메소드에 쿼리 정의 파라미터 바인딩
+- @Query - 리파지토리 메소드에 쿼리 정의 
+- 파라미터 바인딩
 - 반환 타입
 - 페이징과 정렬
 - 벌크성 수정 쿼리
@@ -195,7 +196,8 @@ public class Team {
 - 2. 메소드 이름으로 JPA NamedQuery 호출
 - 3. @Query 어노테이션을 사용해서 리파지토리 인터페이스에 쿼리 직접 정의
 
-- 메소드 이름으로 쿼리 생성
+
+### 메소드 이름으로 쿼리 생성
 
 메소드 이름을 분석해서 JPQL 쿼리 실행 
 
@@ -479,7 +481,7 @@ public interface Slice<T> extends Streamable<T> {
  }
 ``` 
 
-- 스프링 데이터 JPA를 사용한 벌크성 수정 쿼리
+- 스프링 데이터 JPA를 사용한 벌크성 수정 쿼리  
 ***벌크성 쿼리란 DB에서 여러개의 레코드를 한번에 추가/수정/삭제하는 쿼리를 말한다.***
 
 ``` java
@@ -506,25 +508,27 @@ public interface Slice<T> extends Streamable<T> {
  em.clear();
 ```
 
+### @EntityGraph
+
 - @EntityGraph
   - 연관된 엔티티들을 SQL 한번으로 조회하는 방법이다.
   - Spring Data JPA에서 fetch join 하는 것을 말함.
 
 ***member -> team이 지연로딩 관계로 엮여있다면, team 조회 시 할 때 마다 쿼리가 실행된다. N + 1 문제 발생***
 ``` java
- @ManyToOne(fetch = LAZY)
- @JoinColumn(name = "team_id")
- private Team team;
+@ManyToOne(fetch = LAZY)
+@JoinColumn(name = "team_id")
+private Team team;
 ``` 
 
 
 - JPQL 페치 조인 - N + 1 문제 해결함.
 ``` java
- @Query(value = "select m from Member m left join fetch m.team")
- List<Member> findMemberFetchJoin();
+@Query(value = "select m from Member m left join fetch m.team")
+List<Member> findMemberFetchJoin();
 ``` 
 
-스프링 데이터 JPA는 JPA가 제공하는 엔티티 그래프 기능을 편리하게 사용하게 도와준다. 
+스프링 데이터 JPA는 JPA가 제공하는 엔티티 그래프 기능을 편리하게 사용하게 도와준다.  
 이 기능을 사용 하면 JPQL 없이 페치 조인을 사용할 수 있다. (JPQL + 엔티티 그래프도 가능)
 
 - EntityGraph
@@ -545,6 +549,43 @@ List<Member> findMemberEntityGraph();
 List<Member> findByUsername(String username);
 ```
 
-### EntityGraph 정리
+#### EntityGraph 정리
 - 사실상 페치 조인(FETCH JOIN)의 간편 버전
 - LEFT OUTER JOIN 사용
+
+## JPA Hint & Lock
+
+### JPA Hint  
+***JPA 쿼리 힌트(SQL 힌트가 아니라 JPA 구현체에게 제공하는 힌트)***
+
+- 쿼리 힌트 사용
+``` java
+@QueryHints(value = @QueryHint(name = "org.hibernate.readOnly", value ="true"))
+Member findReadOnlyByUsername(String username);
+``` 
+
+``` java
+@Test
+public void queryHint() throws Exception {
+    
+    //given
+    memberRepository.save(new Member("member1", 10));
+    em.flush();
+    em.clear();
+
+    //when
+    Member member = memberRepository.findReadOnlyByUsername("member1");
+    member.setUsername("member2");
+    
+    em.flush(); //Update Query 실행X 
+}
+``` 
+
+### Lock
+
+``` java
+@Lock(LockModeType.PESSIMISTIC_WRITE)
+List<Member> findLockByUsername(String username);
+```
+
+
