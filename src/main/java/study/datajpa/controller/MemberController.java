@@ -49,11 +49,11 @@ public class MemberController {
     /**
      * 100개 데이터 생성
      */
-    @PostConstruct
-    public void init () {
-        for (int i = 0; i < 100; i++) {
-            memberRepository.save(new Member("user"+ i, i));
-        }
-        
-    }
+//    @PostConstruct
+//    public void init () {
+//        for (int i = 0; i < 100; i++) {
+//            memberRepository.save(new Member("user"+ i, i));
+//        }
+//
+//    }
 }
