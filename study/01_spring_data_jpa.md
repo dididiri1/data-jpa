@@ -1,9 +1,8 @@
 
 ## tdd
->//given (이런 데이터가/상황이 주어줬을때)
->//when (이렇케 실행하면)
->//then (이런 결과가 나온다.
-
+- given 이런 상황이(데이터) 주어줬을때
+- when 이렇케 실행하면
+- then 이런 결과가 나온다.
 
 ### 라이브러리 살펴보기
 
@@ -243,9 +242,9 @@ public class Team {
 - LIMIT: findFirst3, findFirst, findTop, findTop3
   - https://docs.spring.io/spring-data/jpa/docs/current/reference/html/#repositories.limit-query-result
 
-> 참고: 이 기능은 엔티티의 필드명이 변경되면 인터페이스에 정의한 메서드 이름도 꼭 함께 변경해야 한다. 
-> 그렇지 않으면 애플리케이션을 시작하는 시점에 오류가 발생한다.
-> 이렇게 애플리케이션 로딩 시점에 오류를 인지할 수 있는 것이 스프링 데이터 JPA의 매우 큰 장점이다.
+> 참고: 이 기능은 엔티티의 필드명이 변경되면 인터페이스에 정의한 메서드 이름도 꼭 함께 변경해야 한다.   
+> 그렇지 않으면 애플리케이션을 시작하는 시점에 오류가 발생한다. 이렇게 애플리케이션 로딩 시점에   
+> 오류를 인지할 수 있는것이 스프링 데이터 JPA의 매우 큰 장점이다.
 
 ### JPA NamedQuery
 
@@ -274,13 +273,13 @@ JPA의 NamedQuery를 호출할 수 있음
 
 #### 스프링 데이터 JPA로 NamedQuery 사용
 ``` java
-  @Query(name = "Member.findByUsername")
-  List<Member> findByUsername(@Param("username") String username);
+@Query(name = "Member.findByUsername")
+List<Member> findByUsername(@Param("username") String username);
 ``` 
 
 장점: 애플리케이션 로딩 시점에 문법 오류를 체크함. JPQL은 문법 오류 안나는데 사용자가 눌렀을때 에러남.
 
-> 참고: 스프링 데이터 JPA를 사용하면 실무에서 Named Query를 직접 등록해서 사용하는 일은 드물다. 
+> 참고: 스프링 데이터 JPA를 사용하면 실무에서 Named Query를 직접 등록해서 사용하는 일은 드물다.   
 > 대신 @Query 를 사용해서 리파지토리 메소드에 쿼리를 직접 정의한다.
 
 - @Query, 리포지토리 메소드에 쿼리 정의하기
@@ -288,15 +287,15 @@ JPA의 NamedQuery를 호출할 수 있음
 ***이름이 없는 NamedQuery 라고 생각하면 된다.***
 
 ``` java
- @Query("select m from Member m where m.username= :username and m.age = :age")
- List<Member> findUser(@Param("username") String username, @Param("age") int age);
+@Query("select m from Member m where m.username= :username and m.age = :age")
+List<Member> findUser(@Param("username") String username, @Param("age") int age);
 ``` 
 
 - @org.springframework.data.jpa.repository.Query 어노테이션을 사용
 - 실행할 메서드에 정적 쿼리를 직접 작성하므로 이름 없는 Named 쿼리라 할 수 있음
 - JPA Named 쿼리처럼 애플리케이션 실행 시점에 문법 오류를 발견할 수 있음(매우 큰 장점!)
 
-> 참고: 실무에서는 메소드 이름으로 쿼리 생성 기능은 파라미터가 증가하면 메서드 이름이 매우 지저분해진다. 
+> 참고: 실무에서는 메소드 이름으로 쿼리 생성 기능은 파라미터가 증가하면 메서드 이름이 매우 지저분해진다.  
 > 따라서 @Query 기능을 자주 사용하게 된다.
 
 
@@ -319,17 +318,17 @@ JPA의 NamedQuery를 호출할 수 있음
 - 위치 기반 
 - 이름 기반
 ``` java
- select m from Member m where m.username = ?0 //위치 기반 
+select m from Member m where m.username = ?0 //위치 기반 
  
- select m from Member m where m.username = :name //이름 기반
+select m from Member m where m.username = :name //이름 기반
 ``` 
 
 > 참고: 코드 가독성과 유지보수를 위해 이름 기반 파라미터 바인딩을 사용하자
 
 #### 컬렉션 파라미터 바인딩 (Collection 타입으로 in절 지원)
 ``` java
- @Query("select m from Member m where m.username in :names")
- List<Member> findByNames(@Param("names") Collection<String> names);
+@Query("select m from Member m where m.username in :names")
+List<Member> findByNames(@Param("names") Collection<String> names);
 ``` 
 
 ### 반환 타입
@@ -376,9 +375,9 @@ JPA의 NamedQuery를 호출할 수 있음
   - 결과 없음: null 반환
   - 결과가 2건 이상: javax.persistence.NonUniqueResultException 예외 발생 
 
-> 참고: 단건으로 지정한 메서드를 호출하면 스프링 데이터 JPA는 내부에서 JPQL의 Query.getSingleResult() 메서드를 호출한다.
-> 이 메서드를 호출했을 때 조회 결과가 없으면 javax.persistence.NoResultException 예외가 발생하는데 개발자 입장에서 다루기가 상당히 불편하 다.
-> 스프링 데이터 JPA는 단건을 조회할 때 이 예외가 발생하면 예외를 무시하고 대신에 null 을 반환한다.
+> 참고: 단건으로 지정한 메서드를 호출하면 스프링 데이터 JPA는 내부에서 JPQL의 Query.getSingleResult() 메서드를 호출한다.  
+> 이 메서드를 호출했을 때 조회 결과가 없으면 javax.persistence.NoResultException 예외가 발생하는데 개발자 입장에서   
+> 다루기가 상당히 불편하다. 스프링 데이터 JPA는 단건을 조회할 때 이 예외가 발생하면 예외를 무시하고 대신에 null 을 반환한다.
 
 ### 순수 JPA 페이징과 정렬
 
@@ -643,12 +642,11 @@ List<Member> result = memberRepository.findMemberCustom();
   - 규칙: 리포지토리 인터페이스 이름 + Impl
   - 스프링 데이터 JPA가 인식해서 스프링 빈으로 등록
 
-> 참고: 실무에서는 주로 QueryDSL이나 SpringJdbcTemplate을 
-> 함께 사용할 때 사용자 정의 리포지토 리 기능 자주 사용한다.
+> 참고: 실무에서는 주로 QueryDSL이나 SpringJdbcTemplate을 함께 사용할 때 사용자 정의 리포지토 리 기능 자주 사용한다.
 
-> 참고: 항상 사용자 정의 리포지토리가 필요한 것은 아니다. 그냥 임의의 리포지토리를 만들어도 된다. 예를
-> 들어 MemberQueryRepository를 인터페이스가 아닌 클래스로 만들고 스프링 빈으로 등록해서 그냥 직
-> 접 사용해도 된다. 물론 이 경우 스프링 데이터 JPA와는 아무런 관계 없이 별도로 동작한다.
+> 참고: 항상 사용자 정의 리포지토리가 필요한 것은 아니다. 그냥 임의의 리포지토리를 만들어도 된다.  
+> 예를 들어 MemberQueryRepository를 인터페이스가 아닌 클래스로 만들고 스프링 빈으로 등록해서  
+> 직접 사용해도 된다. 물론 이 경우 스프링 데이터 JPA와는 아무런 관계 없이 별도로 동작한다.
 
 ### Auditing
 
@@ -719,9 +717,9 @@ public class BaseEntity {
 }
 ``` 
 
-#### 등록자, 수정자를 처리해주는 AuditorAware 스프링 빈 등록\
+#### 등록자, 수정자를 처리해주는 AuditorAware 스프링 빈 등록
 ``` java
-@EnableJpaAuditing // @EnableJpaAuditing 도 함께 등록해야 합니다.
+@EnableJpaAuditing // @EnableJpaAuditing도 함께 등록해야 한다.
 @SpringBootApplication
 public class DataJpaApplication {
          
@@ -736,9 +734,9 @@ public class DataJpaApplication {
 }
 ``` 
 
-> 참고: 실무에서는 세션 정보나, 스프링 시큐리티 로그인 정보에서 ID를 받음
+#### 실무에서는 세션 정보나, 스프링 시큐리티 로그인 정보에서 ID를 받음
 
-> 참고: 실무에서 대부분의 엔티티는 등록시간, 수정시간이 필요하지만, 등록자, 수정자는 없을 수도 있다. 
+> 참고: 실무에서 대부분의 엔티티는 등록시간, 수정시간이 필요하지만, 등록자, 수정자는 없을 수도 있다.   
 > 그래서 다음과 같이 Base 타입을 분리하고, 원하는 타입을 선택해서 상속한다.
 
 ``` java
@@ -762,3 +760,103 @@ public class BaseEntity extends BaseTimeEntity {
 ``` 
  
 #### 시간만 필요하면 BaseTimeEntity 상속받고, 4가지 다 필요하면 BaseEntity 상속 받으면 됨.
+
+## Web 확장 - 페이징과 정렬
+
+***스프링 데이터가 제공하는 페이징과 정렬 기능을 스프링 MVC에서 편리하게 사용할 수 있다.***
+
+#### 페이징과 정렬 예제
+``` java
+@GetMapping("/members")
+public Page<Member> list(Pageable pageable) {
+     Page<Member> page = memberRepository.findAll(pageable);
+     return page;
+}
+``` 
+
+- 파라미터로 Pageable 을 받을 수 있다.
+- Pageable 은 인터페이스, 실제는 org.springframework.data.domain.PageRequest 객체 생성
+
+#### 요청 파라미터
+- 예) /members?page=0&size=3&sort=id,desc&sort=username,desc
+- page: 현재 페이지, 0부터 시작한다.
+- size: 한 페이지에 노출할 데이터 건수
+- sort: 정렬 조건을 정의한다.  
+  예) 정렬 속성,정렬 속성...(ASC | DESC), 정렬 방향을 변경하고 싶으면 sort 파라미터 추가 ( asc 생략 가능)
+
+
+#### 페이징 설정
+- 글로벌 설정: application.yml
+
+``` yml
+  data:
+    web:
+      pageable:
+        default-page-size: 5
+        max-page-size: 2000
+``` 
+
+### 개별 설정: @PageableDefault
+
+``` java
+@GetMapping("/members")
+public Page<Member> list(@PageableDefault(size = 10, sort = "username") Pageable pageable) {
+     Page<Member> page = memberRepository.findAll(pageable);
+     return page;
+}
+``` 
+
+#### Page 내용을 DTO로 변환하기
+- 엔티티를 API로 노출하면 다양한 문제가 발생한다. 그래서 엔티티를 꼭 DTO로 변환해서 반환해야 한다.
+- Page는 map() 을 지원해서 내부 데이터를 다른 것으로 변경할 수 있다.
+
+
+#### MemberDto
+``` java
+@Data
+public class MemberDto {
+
+    private Long id;
+    private String username;
+    private String teamName;
+
+    public MemberDto(Long id, String username, String teamName) {
+        this.id = id;
+        this.username = username;
+        this.teamName = teamName;
+    }
+
+    public MemberDto(Member member) {
+        this.id = member.getId();
+        this.username = member.getUsername();
+    }
+}
+
+``` 
+
+#### Page.map() 사용
+``` java
+@GetMapping("/members")
+public Page<MemberDto> list(@PageableDefault(size = 10, sort = "username") Pageable pageable) {
+     Page<Member> page = memberRepository.findAll(pageable);
+     Page<MemberDto> map = page.map(member -> new MemberDto(member));
+
+     return map;
+}
+``` 
+
+#### Page.map() 코드 최적화
+``` java
+@GetMapping("/members")
+public Page<MemberDto> list(@PageableDefault(size = 10, sort = "username") Pageable pageable) {
+    return memberRepository.findAll(pageable).map(MemberDto::new);
+}
+``` 
+
+### Page를 1부터 시작하기
+- 스프링 데이터는 Page를 0부터 시작한다.
+- 만약 1부터 시작하려면?
+  - Pageable, Page를 파리미터와 응답 값으로 사용히지 않고, 직접 클래스를 만들어서 처리한다.  
+    그리고 직접 PageRequest(Pageable 구현체)를 생성해서 리포지토리에 넘긴다. 
+    응답값도 Page 대신에 직접 만들어서 제공해야 한다.
+  - spring.data.web.pageable.one-indexed-parameters 를 true 로 설정한다. 근데 한계가 있다.
